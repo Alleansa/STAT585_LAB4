@@ -1,11 +1,45 @@
-# STAT585_LAB4
+---
+title: "Stat 585 Lab 4: Team 1"
+author: "Qing He, Earl Hur, Kellie McClernon, Xin Zhang"
+date: "April 17, 2019"
+output: html_document
+---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-Your Applications
+See our group github [repository]() for all files.
 
-Create New Application
-Name isu stat 585 lab 4 team 1
-Description for a course lab at ISU
-App Token. X1QYLARnM0NJ7ykwNJ2aH1ig5
-Secret Token
-Show Secret Token
+## Reading the data
+
+We could collect approximately 1000 observations from the Iowa data portal for liquors sale without an API key.
+
+```{r liquor_samp}
+url_csv <- "https://data.iowa.gov/resource/m3tr-qhgy.csv"
+liquor1000 <- readr::read_csv(url_csv)
+```
+
+If we want more observations then we can sign up for an API key and login to access all [Iowa data](https://data.iowa.gov/login) repositories. Then if our key was "our_key", our call would be as follows.
+
+```{r with_key, eval = FALSE}
+key <- "app_token=our_key"
+url_key <- sprintf("%s&$$%s", url_csv, key)
+all_liquor <- readr::read_csv(url_key)
+```
+
+Or we could use an actual API key. However, we are still only getting 1000 observations. For some reason our output appears to be throttled.
+
+```{r real_key}
+our_key <- "app_token=X1QYLARnM0NJ7ykwNJ2aH1ig5"
+query <- "city=Ames"
+grp1_key <- sprintf("%s?$$%s&%s", url_csv, our_key,query)
+all_liquor <- readr::read_csv(grp1_key)
+```
+## Cleaning the data
+
+### Shiny app
+```{r run_shiny}
+library(shiny)
+runApp("shiny")
+```

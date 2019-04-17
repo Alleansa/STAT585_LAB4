@@ -9,4 +9,4 @@ App Token zb57VdEDTrlNS1wtuyxviMxWJ
 Secret Token  funDroxK-2sLIX6hTOvx3unfSrG20uQoLsoi
 
 email xinzhang@iastate.edu
-passwork Stat585_lab4_team1
+password Stat585_lab4_team1

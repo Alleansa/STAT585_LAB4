@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-See our group github [repository]() for all files.
+See our group github [repository](https://github.com/Alleansa/STAT585_LAB4) for all files.
 
 ## Reading the data
 
@@ -36,10 +36,13 @@ query <- "city=Ames"
 grp1_key <- sprintf("%s?$$%s&%s", url_csv, our_key,query)
 all_liquor <- readr::read_csv(grp1_key)
 ```
+
 ## Cleaning the data
 
 ### Shiny app
+
 ```{r run_shiny}
 library(shiny)
 runApp("shiny")
 ```
+

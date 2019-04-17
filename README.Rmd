@@ -3,9 +3,10 @@
 
 Your Applications
 
-Create New Application
-Name isu stat 585 lab 4 team 1
-Description for a course lab at ISU
-App Token. X1QYLARnM0NJ7ykwNJ2aH1ig5
-Secret Token
-Show Secret Token
+Name Stat585_lab4_team1_isu
+Description for course lab
+App Token zb57VdEDTrlNS1wtuyxviMxWJ
+Secret Token  funDroxK-2sLIX6hTOvx3unfSrG20uQoLsoi
+
+email xinzhang@iastate.edu
+passwork Stat585_lab4_team1

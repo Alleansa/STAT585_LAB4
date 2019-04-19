@@ -1,9 +1,9 @@
 library(shiny)
 library(tidyverse)
 
-ui <- navbarPage("Lab4",
-                 tabPanel("Tab1"),
-                 tabPanel("Tab2")
+ui <- navbarPage("Lab4, Team1",
+                 tabPanel("Temporal"),
+                 tabPanel("Spatial")
 )
 
 server <- function(input, output) {

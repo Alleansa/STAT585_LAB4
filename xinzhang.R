@@ -38,7 +38,7 @@ library(shiny)
 ui <- fluidPage(
   
   # App title ----
-  titlePanel("Tabsets"),
+  titlePanel("Iowa Liquor Sales-Story"),
   
   # Sidebar layout with input and output definitions ----
   sidebarLayout(

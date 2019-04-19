@@ -1,15 +1,25 @@
-# Below are my thoughts for temporal analysis:
-# We could do a plot of volume sold over time
-# possible options are: for particular city, particular year, gallons or liters
-
-# still need to figure out all of aggregated data and save off file to data file in project
-story <- readr::read_csv("/home/kmc/Desktop/Iowa_Liquor_Sales-Story.csv")
-
 library(tidyverse)
-story_clean <- story %>% mutate(new_date = lubridate::mdy(Date))
+url <- "https://data.iowa.gov/resource/m3tr-qhgy.json?county=Story"
+story_list <- jsonlite::read_json(url)
+new.distinct.names <- story_list %>% 
+  purrr::map(.x, 
+             .f=~names(rbind.data.frame(rlist::list.flatten(.x),0)))
+unlisted <- story_list %>% 
+  purrr::map(.f = ~rbind.data.frame(unlist(.x, recursive=T, use.names=T)))
+unlisted.info <- purrr::map2(unlisted,
+                             new.distinct.names,
+                             .f= ~purrr::set_names(.x, .y))
+story_dat <- do.call(plyr::rbind.fill, unlisted.info)
+rm(url, story_list, new.distinct.names, unlisted, unlisted.info)
+story_dat$date <- as.character(story_dat$date)
+story_dat$date <- substr(story_dat$date, 1, nchar(story_dat$date)-13)
+story_dat$date <- strptime(story_dat$date, "%Y-%m-%d")
+story_dat$date <- format(story_dat$date, "%Y/%m/%d")
+
+story_clean <- story_dat %>% mutate(new_date = lubridate::ymd(date))
 
 # format city variable since some names are all capitals
-story_clean$City <- stringr::str_to_title(story_clean$City)
+story_clean$City <- stringr::str_to_title(story_clean$city)
 # format of store
 
 
@@ -18,27 +28,35 @@ story_clean <- story_clean %>% mutate(Month = lubridate::month(new_date, label =
                                 Year = lubridate::year(new_date),
                                 Mon_Yr = lubridate::floor_date(new_date, unit = "month"))
 
-vol_agg <- story_clean %>% group_by(Year, Month, City) %>% 
-                  summarize_at(vars('Volume Sold (Liters)', 'Volume Sold (Gallons)'),
+story_clean$sale_liters <- as.numeric(story_clean$sale_liters)
+story_clean$sale_gallons <- as.numeric(story_clean$sale_gallons)
+
+vol_agg <- story_clean %>% group_by(Year, Month, city) %>% 
+                  summarize_at(vars(sale_liters, sale_gallons),
                                .funs = sum)
 vol_agg$Year <- factor(vol_agg$Year, order = TRUE)
 
-vol2 <- story_clean %>% group_by(Mon_Yr, City) %>% 
-  summarize_at(vars('Volume Sold (Liters)', 'Volume Sold (Gallons)'),
+vol2 <- story_clean %>% group_by(Mon_Yr, city) %>% 
+  summarize_at(vars(sale_liters, sale_gallons),
                .funs = sum)
                                
-ggplot(vol2, aes(x = Mon_Yr, y = `Volume Sold (Liters)`, group = City, color = City)) +
-         geom_point()
+ggplot(vol2, aes(x = Mon_Yr, y = sale_liters, group = city, color = city)) +
+         geom_point() + geom_line() + theme_bw()
 
-ggplot(filter(vol_agg, City == 'Ames')) + 
-         geom_line(aes(x = Month, y = `Volume Sold (Liters)`, 
-                       group = Year, color = Year)) + ylab("Volume Sold (Liters)")
-# ugh, color palette is so ugly...
+vol_agg$city <- as.character(vol_agg$city)
 
-ggplot(vol_agg) + 
-  geom_point(aes(x = Month, y = `Volume Sold (Liters)`, 
-                group = City, color = City)) + ylab("Volume Sold (Liters)")
+ggplot(filter(vol_agg, city == "AMES")) + 
+         geom_line(aes(x = Month, y = sale_liters, 
+                       group = Year, color = Year)) + ylab("Volume Sold (Liters)") +
+  theme_bw()
 
-ggplot(filter(vol_agg, Year == 2017 & City != 'Ames')) + 
-  geom_line(aes(x = Month, y = `Volume Sold (Liters)`, 
-                 group = City, color = City)) + ylab("Volume Sold (Liters)")
+vol_agg$interact <- interaction(vol_agg$city, vol_agg$Year)
+
+ggplot(filter(vol_agg, city != "AMES"), aes(x = Month, y = sale_liters, group = interact, color = city)) + 
+  geom_point() + geom_line() + 
+  ylab("Volume Sold (Liters)") + theme_bw()
+
+
+ggplot(filter(vol_agg, Year == 2015 & city == "AMES")) + 
+  geom_line(aes(x = Month, y = sale_liters, 
+                 group = city, color = city)) + ylab("Volume Sold (Liters)")

@@ -15,6 +15,38 @@ See our group github [repository](https://github.com/Alleansa/STAT585_LAB4) for 
 
 We could collect approximately 1000 observations from the Iowa data portal for liquors sale without an API key.
 
+The code to obtin the liquirs sale is described as follow:
+```{r}
+library(tidyverse)
+# Get the api address
+url <- "https://data.iowa.gov/resource/m3tr-qhgy.json?county=Story"
+
+# Make 1000 list of stores in Story county
+story_list <- jsonlite::read_json(url)
+
+# Get the variable names using list.flatten
+new.distinct.names <- story_list %>% 
+  purrr::map(.x, 
+             .f=~names(rbind.data.frame(rlist::list.flatten(.x),0)))
+
+#  Get the observations from variables
+unlisted <- story_list %>% 
+  purrr::map(.f = ~rbind.data.frame(unlist(.x, recursive=T, use.names=T)))
+
+# Make a list of data frames
+unlisted.info <- purrr::map2(unlisted,
+                             new.distinct.names,
+                             .f= ~purrr::set_names(.x, .y))
+
+# Combine data frames in the list
+story_dat <- do.call(plyr::rbind.fill, unlisted.info)
+
+# We do not need these any more.
+rm(url, story_list, new.distinct.names, unlisted, unlisted.info)
+```
+
+We can also obtain data directly from *data.iowa.gov* website.
+
 ```{r liquor_samp}
 url_csv <- "https://data.iowa.gov/resource/m3tr-qhgy.csv"
 liquor1000 <- readr::read_csv(url_csv)
@@ -23,9 +55,9 @@ liquor1000 <- readr::read_csv(url_csv)
 If we want more observations then we can sign up for an API key and login to access all [Iowa data](https://data.iowa.gov/login) repositories. Then if our key was "our_key", our call would be as follows.
 
 ```{r with_key, eval = FALSE}
-key <- "app_token=our_key"
-url_key <- sprintf("%s&$$%s", url_csv, key)
-all_liquor <- readr::read_csv(url_key)
+#key <- "app_token=our_key"
+#url_key <- sprintf("%s&$$%s", url_csv, key)
+#all_liquor <- readr::read_csv(url_key) # THis code does not work unless we have our own key...
 ```
 
 Or we could use an actual API key. However, we are still only getting 1000 observations. For some reason our output appears to be throttled.
@@ -34,7 +66,7 @@ Or we could use an actual API key. However, we are still only getting 1000 obser
 our_key <- "app_token=X1QYLARnM0NJ7ykwNJ2aH1ig5"
 query <- "city=Ames"
 grp1_key <- sprintf("%s?$$%s&%s", url_csv, our_key,query)
-all_liquor <- readr::read_csv(grp1_key)
+all_liquor <- readr::read_csv(grp1_key) #Looks the same as the one we obtained in the first step. This code looks a lot simpler than the first one! 
 ```
 
 ## Cleaning the data
@@ -42,7 +74,7 @@ all_liquor <- readr::read_csv(grp1_key)
 ### Shiny app
 
 ```{r run_shiny}
-library(shiny)
-runApp("shiny")
+#library(shiny)
+#runApp("shiny")
 ```
 

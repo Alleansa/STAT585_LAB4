@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 See our group github [repository](https://github.com/Alleansa/STAT585_LAB4) for all files.
 
-## Reading the data
+## 1. Reading the data
 
 We could collect approximately 1000 observations from the Iowa data portal for liquors sale without an API key.
 
@@ -47,7 +47,7 @@ rm(url, story_list, new.distinct.names, unlisted, unlisted.info)
 
 We can also obtain data directly from *data.iowa.gov* website.
 
-```{r liquor_samp}
+```{r liquor_samp, warning=FALSE}
 url_csv <- "https://data.iowa.gov/resource/m3tr-qhgy.csv"
 liquor1000 <- readr::read_csv(url_csv)
 ```
@@ -62,16 +62,56 @@ If we want more observations then we can sign up for an API key and login to acc
 
 Or we could use an actual API key. However, we are still only getting 1000 observations. For some reason our output appears to be throttled.
 
-```{r real_key}
+```{r real_key, message=FALSE, warning=FALSE}
 our_key <- "app_token=X1QYLARnM0NJ7ykwNJ2aH1ig5"
 query <- "city=Ames"
 grp1_key <- sprintf("%s?$$%s&%s", url_csv, our_key,query)
 all_liquor <- readr::read_csv(grp1_key) #Looks the same as the one we obtained in the first step. This code looks a lot simpler than the first one! 
 ```
 
-## Cleaning the data
+## 2. Cleaning the data
 
-### Shiny app
+### 2.1 data cleaning for spatial varibles
+
+```{r}
+## DATA PREPROCESSING
+load(file = "./data/rawstory.RData")
+
+#obtain the lon,lat information from store.location column. 
+story %>% 
+   mutate(Lat = as.numeric(qdapRegex::rm_between(Store.Location, '(', ',', extract=TRUE)),
+          Lon = as.numeric(qdapRegex::rm_between(Store.Location, ',', ')', extract=TRUE)))->story_data
+
+#remove stores with no lon,lat information, take the average of obtained lon,lat for each store since some store at the same location reported different lon,lat value.  
+ story_data %>% 
+   group_by(Store.Number,Store.Name) %>%
+   summarise(Lon = mean(Lon,na.rm = 1),
+             Lat = mean(Lat,na.rm = 1)) -> store_info
+ 
+ store_info <- store_info[!duplicated(store_info$Store.Number),]
+ 
+ #replace old the lon.lat info
+ story_data %>% 
+   select(-Lon,-Lat,-Store.Name) %>% 
+   left_join(store_info,by='Store.Number') -> story_data
+
+```
+
+### 2.2 Data cleaning for temporal data
+
+```{r}
+# Convert Date into date class, add variables month, year and mon_yr for future plots
+story_data %>% mutate(Date = lubridate::mdy(Date),
+                      City = tolower(City)) %>% 
+  filter(Lon !='NaN')-> story_data
+
+story_clean <- story_data %>% mutate(Month = lubridate::month(Date, label = TRUE),
+                                     Year = lubridate::year(Date),
+                                     Mon_Yr = lubridate::floor_date(Date, unit = "month"))
+```
+
+
+## 3. Shiny app
 
 ```{r run_shiny}
 #library(shiny)

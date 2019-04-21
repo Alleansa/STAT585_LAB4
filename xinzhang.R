@@ -146,7 +146,8 @@ server <- function(input, output) {
     filter(City %in% input$City,
            between(Lon, min(input$Lon),max(input$Lon)),
            between(Lat, min(input$Lat),max(input$Lat)),
-           Date >= input$date[1]& Date <= input$date[2])
+           Date >= input$date[1]& Date <= input$date[2]) %>% 
+    mutate(Category.Name = toupper(Category.Name))
   })
   output$map <- leaflet::renderLeaflet({
     leaflet::leaflet(data = d1() %>% select(Store.Name, Lon, Lat) %>% distinct()) %>%

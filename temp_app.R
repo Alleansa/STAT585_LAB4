@@ -2,6 +2,7 @@ library(shiny)
 library(tidyverse)
 library(plotly)
 library(lubridate)
+library(leaflet)
 
 
 load(file = 'data/story.RData')

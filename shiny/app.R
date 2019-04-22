@@ -19,7 +19,7 @@ story_clean <- story_data %>% mutate(Month = lubridate::month(Date, label = TRUE
 vol2 <- story_clean %>% group_by(Mon_Yr, City) %>% 
   summarize_at(vars('Volume.Sold..Liters.', 'Sale..Dollars.'),
                .funs = sum, na.rm=TRUE)
-names(vol2) <- c("Mon_Yr", "City", "Litter", "Dollar")
+names(vol2) <- c("Mon_Yr", "City", "Liter", "Dollar")
 
 ui <- navbarPage("Lab4, Team1",
                  tabPanel("Temporal",
@@ -129,7 +129,8 @@ server <- function(input, output) {
              Mon_Yr >= input$date1[1] & Mon_Yr <= input$date1[2])
     
     p <- ggplot(vol2_sub, aes_string(x = "Mon_Yr", y = input$int1, group = "City", color = "City")) +
-      geom_line() + ylab("Volume Sold (Liters)") + theme_bw()
+      geom_line() + 
+      ylab(paste0("Volume Sold (", input$int1, ")")) + xlab("Time") + theme_bw()
     p
   })
   
